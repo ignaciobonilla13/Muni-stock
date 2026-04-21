@@ -109,16 +109,12 @@ export async function createStockMovement(req: Request, res: Response) {
     let movementDoc: any = null;
     let newQty = 0;
 
-    await session.withTransaction(async () => {
-      const productExists = await Product.exists({ _id: pid }).session(session);
-      if (!productExists) throw new BadRequestError("Product not found");
+    const invFound = await Inventory.findOne({ productId: pid }).session(session);
+if (!invFound && type === "OUT") throw new BadRequestError("Stock insuficiente");
 
-      let inv = await Inventory.findOne({ productId: pid }).session(session);
-      if (!inv) {
-        if (type === "OUT") throw new BadRequestError("Stock insuficiente");
-        const created = await Inventory.create([{ productId: pid, qtyOnHand: 0 }], { session });
-        inv = created[0];
-      }
+const inv = invFound ?? (
+  await Inventory.create([{ productId: pid, qtyOnHand: 0 }], { session })
+)[0];
 
       if (type === "OUT" && inv.qtyOnHand < qty) {
         throw new BadRequestError("Stock insuficiente");
