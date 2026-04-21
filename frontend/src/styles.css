@@ -338,20 +338,6 @@ button:disabled {
   button {
     font-size: 15px; /* evita zoom automático en iOS */
   }
-}:root {
-  --bg0: #070a12;
-  --bg1: #0b1220;
-  --card: rgba(255, 255, 255, 0.04);
-  --card2: rgba(255, 255, 255, 0.06);
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-  --border: rgba(255, 255, 255, 0.12);
-  --primary: #60a5fa;
-  --primary2: #3b82f6;
-  --danger: #fb7185;
-  --success: #34d399;
-  --radius: 14px;
-  --panel-side: 420px; /* ancho del panel derecho, usado en pageGrid */
 }
 
 * {
@@ -678,4 +664,45 @@ button:disabled {
   button {
     font-size: 15px; /* evita zoom automático en iOS */
   }
+}/* ── Modal ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modalBox {
+  background: #0f1726;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.modalClose {
+  padding: 4px 10px;
+  font-size: 16px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+.modalClose:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
 }
