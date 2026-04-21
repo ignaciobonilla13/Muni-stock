@@ -10,7 +10,6 @@ function parseDateParam(raw: unknown, mode: "start" | "end"): Date | null {
   const v = raw.trim();
   if (!v) return null;
 
-  // Si viene como YYYY-MM-DD, lo convertimos a rango UTC.
   if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
     const t = mode === "start" ? "T00:00:00.000Z" : "T23:59:59.999Z";
     return new Date(v + t);
@@ -23,15 +22,14 @@ function parseDateParam(raw: unknown, mode: "start" | "end"): Date | null {
 
 export async function listStockMovements(req: Request, res: Response) {
   const productIdRaw = req.query.productId;
-  const productId = typeof productIdRaw === "string" && productIdRaw.trim() ? productIdRaw.trim() : null;
+  const productId =
+    typeof productIdRaw === "string" && productIdRaw.trim() ? productIdRaw.trim() : null;
 
   const from = parseDateParam(req.query.from, "start");
   const to = parseDateParam(req.query.to, "end");
 
   const filter: Record<string, unknown> = {};
-  if (productId) {
-    filter.productId = productId;
-  }
+  if (productId) filter.productId = productId;
   if (from || to) {
     filter.occurredAt = {
       ...(from ? { $gte: from } : {}),
@@ -39,9 +37,7 @@ export async function listStockMovements(req: Request, res: Response) {
     };
   }
 
-  const movements = await StockMovement.find(filter)
-    .sort({ occurredAt: -1 })
-    .limit(500);
+  const movements = await StockMovement.find(filter).sort({ occurredAt: -1 }).limit(500);
 
   return res.json({
     movements: movements.map((m) => ({
@@ -86,14 +82,16 @@ export async function createStockMovement(req: Request, res: Response) {
   let cost: number | undefined;
   if (unitCost != null) {
     const n = typeof unitCost === "number" ? unitCost : Number(unitCost);
-    if (!Number.isFinite(n) || n < 0) return res.status(400).json({ message: "Field `unitCost` inválido" });
+    if (!Number.isFinite(n) || n < 0)
+      return res.status(400).json({ message: "Field `unitCost` inválido" });
     cost = n;
   }
 
   let occurredAtDate: Date;
   if (occurredAt != null) {
     const d = new Date(String(occurredAt));
-    if (Number.isNaN(d.getTime())) return res.status(400).json({ message: "Field `occurredAt` inválido" });
+    if (Number.isNaN(d.getTime()))
+      return res.status(400).json({ message: "Field `occurredAt` inválido" });
     occurredAtDate = d;
   } else {
     occurredAtDate = new Date();
@@ -118,7 +116,8 @@ export async function createStockMovement(req: Request, res: Response) {
       let inv = await Inventory.findOne({ productId: pid }).session(session);
       if (!inv) {
         if (type === "OUT") throw new BadRequestError("Stock insuficiente");
-        inv = await Inventory.create([{ productId: pid, qtyOnHand: 0 }], { session }).then((docs) => docs[0]);
+        const created = await Inventory.create([{ productId: pid, qtyOnHand: 0 }], { session });
+        inv = created[0];
       }
 
       if (type === "OUT" && inv.qtyOnHand < qty) {
@@ -172,4 +171,3 @@ export async function createStockMovement(req: Request, res: Response) {
     session.endSession();
   }
 }
-
