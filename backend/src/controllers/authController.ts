@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { Request, Response } from "express";
 
 import { env } from "../config/env";
@@ -21,7 +21,7 @@ export async function login(req: Request, res: Response) {
   const token = jwt.sign(
     { sub: user._id.toString(), role: user.role },
     env.JWT_SECRET,
-    { expiresIn: env.JWT_EXPIRES_IN }
+    { expiresIn: env.JWT_EXPIRES_IN as SignOptions["expiresIn"] }
   );
 
   return res.json({ token });
@@ -41,4 +41,3 @@ export async function me(req: Request, res: Response) {
     },
   });
 }
-
