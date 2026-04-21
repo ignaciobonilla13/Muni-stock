@@ -4,7 +4,7 @@ import { Product } from "../models/Product";
 import { Inventory } from "../models/Inventory";
 
 export async function createProduct(req: Request, res: Response) {
-  const { name, sku, unitCost } = req.body ?? {};
+  const { name, description, unitCost, supplier, invoiceNumber } = req.body ?? {};
 
   if (typeof name !== "string" || !name.trim()) {
     return res.status(400).json({ message: "Field `name` is required" });
@@ -12,11 +12,12 @@ export async function createProduct(req: Request, res: Response) {
 
   const product = await Product.create({
     name: name.trim(),
-    sku: typeof sku === "string" ? sku.trim() : undefined,
+    description: typeof description === "string" ? description.trim() : undefined,
     unitCost: typeof unitCost === "number" ? unitCost : undefined,
+    supplier: typeof supplier === "string" ? supplier.trim() : undefined,
+    invoiceNumber: typeof invoiceNumber === "string" ? invoiceNumber.trim() : undefined,
   });
 
-  // Cada producto arranca con inventario en 0.
   await Inventory.create({ productId: product._id, qtyOnHand: 0 });
 
   return res.status(201).json({ product });
@@ -28,15 +29,17 @@ export async function listProducts(_req: Request, res: Response) {
     products: products.map((p) => ({
       _id: p._id.toString(),
       name: p.name,
-      sku: p.sku,
+      description: p.description,
       unitCost: p.unitCost,
+      supplier: p.supplier,
+      invoiceNumber: p.invoiceNumber,
     })),
   });
 }
 
 export async function updateProduct(req: Request, res: Response) {
   const { id } = req.params;
-  const { name, sku, unitCost } = req.body ?? {};
+  const { name, description, unitCost, supplier, invoiceNumber } = req.body ?? {};
 
   if (typeof name === "string" && !name.trim()) {
     return res.status(400).json({ message: "`name` no puede ser vacío" });
@@ -46,8 +49,10 @@ export async function updateProduct(req: Request, res: Response) {
     id,
     {
       ...(typeof name === "string" ? { name: name.trim() } : {}),
-      ...(typeof sku === "string" ? { sku: sku.trim() || undefined } : {}),
+      ...(typeof description === "string" ? { description: description.trim() || undefined } : {}),
       ...(typeof unitCost === "number" ? { unitCost } : {}),
+      ...(typeof supplier === "string" ? { supplier: supplier.trim() || undefined } : {}),
+      ...(typeof invoiceNumber === "string" ? { invoiceNumber: invoiceNumber.trim() || undefined } : {}),
     },
     { new: true }
   );
@@ -58,8 +63,10 @@ export async function updateProduct(req: Request, res: Response) {
     product: {
       _id: product._id.toString(),
       name: product.name,
-      sku: product.sku,
+      description: product.description,
       unitCost: product.unitCost,
+      supplier: product.supplier,
+      invoiceNumber: product.invoiceNumber,
     },
   });
 }
@@ -70,7 +77,6 @@ export async function deleteProduct(req: Request, res: Response) {
   const product = await Product.findByIdAndDelete(id);
   if (!product) return res.status(404).json({ message: "Product not found" });
 
-  // Limpiamos el inventario asociado para no dejar datos huérfanos.
   await Inventory.deleteOne({ productId: id });
 
   return res.json({ message: "Product deleted", id });
