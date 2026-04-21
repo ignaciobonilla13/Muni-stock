@@ -19,4 +19,4 @@ const ProductSchema = new Schema<ProductDoc>(
   { timestamps: true }
 );
 
-export const Product = model("Product", ProductSchema);
+export const Product = model<ProductDoc>("Product", ProductSchema);

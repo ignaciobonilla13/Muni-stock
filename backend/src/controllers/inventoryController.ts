@@ -26,10 +26,8 @@ export async function getInventory(req: Request, res: Response) {
   const inventory = products.map((p) => ({
     productId: p._id.toString(),
     name: p.name,
-    sku: p.sku,
     qtyOnHand: invMap.get(p._id.toString()) ?? 0,
   }));
 
   return res.json({ inventory });
 }
-
