@@ -2,7 +2,7 @@
     "rewrites": [
       {
         "source": "/api/:path*",
-        "destination": "https://muni-stock.onrender.com*"
+        "destination": "https://muni-stock.onrender.com/api/:path*"
       }
     ]
   }
